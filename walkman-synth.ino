@@ -1,7 +1,7 @@
 //total lower bound seems to be 128-ish
 #define LOWER_BOUND 200
 #define UPPER_BOUND 220
-#define OUTPUT_PIN 10
+#define OUTPUT_PIN 9
 #define STATUS_LED_PIN 13
 #define FREQUENCY 6
 
