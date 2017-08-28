@@ -28,29 +28,28 @@ MIDI_CREATE_INSTANCE(SoftwareSerial, SoftSerial, MIDI);
 
 byte note = 0;
 
-void handleNoteOn(byte inChannel, byte inNote, byte inVelocity)
-{
-  Serial.println("note on");
+int getOutputValue() {
+  if (note >= 69 && note < 69+19) {
+    return noteToPWM(note - 69);
+  }
+}
+
+void handleNoteOn(byte inChannel, byte inNote, byte inVelocity) {
   note = inNote;
 }
 
-void handleNoteOff(byte inChannel, byte inNote, byte inVelocity)
-{
-  Serial.println("note off");
+void handleNoteOff(byte inChannel, byte inNote, byte inVelocity) {
   note = 0;
 }
 
-void setup() {
-  Serial.begin(9600);
-  Serial.println("Setting up");
-
+void setupMIDI() {
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin();
   MIDI.turnThruOn();
+}
 
-  Serial.println("MIDI enabled");
-
+void setupPWM() {
   TCCR1A = TCCR1A_VALUE;
   TCCR1B = TCCR1B_VALUE;
 
@@ -58,24 +57,22 @@ void setup() {
   OCR1B = 0;  // 1.5 ms. Initial Pulse Width to center servo
 
   DDRB |= (1 << PB2);  // Output on PB2
+}
 
-  Serial.println("setup complete");
+void setup() {
+  //Serial.begin(9600);
+
+  setupMIDI();
+  setupPWM();
 }
 
 void loop() {
-  int outputValue = getOutputValue();
-  OCR1B = outputValue;
+  OCR1B = getOutputValue();
   MIDI.read();
 }
 
+// 0 is A220, can be negative
 int noteToPWM(int note) {
   float scalar = (float)(PWM_12-PWM_0);
   return BASE_PWM+(int)(scalar*pow(2, (float)note/12.0));
 }
-
-int getOutputValue() {
-  if (note >= 69 && note < 69+19) {
-    return noteToPWM(note - 69);
-  }
-}
-
